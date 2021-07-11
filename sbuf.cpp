@@ -3,11 +3,11 @@
 // config.h needed solely for mmap
 #include "config.h"
 
-#include <ctype.h>
 #include <fcntl.h>
-#include <stdio.h>
 #include <sys/stat.h>
 
+#include <cctype>
+#include <cstdio>
 #include <filesystem>
 #include <algorithm>
 
@@ -302,6 +302,8 @@ sbuf_t* sbuf_t::sbuf_malloc(pos0_t pos0_, size_t len_)
                              static_cast<const uint8_t *>(new_malloced), len_, len_, NO_FD, flags_t());
     ret->malloced = new_malloced;
     ret->buf_writable = static_cast<uint8_t *>(new_malloced);
+    assert(ret->buf == ret->malloced);
+    assert(ret->buf == ret->buf_writable);
     return ret;
 }
 
@@ -501,19 +503,24 @@ std::ostream& operator<<(std::ostream& os, const sbuf_t& t) {
     os << "sbuf[pos0=" << t.pos0 << " " << "buf[0..8]=0x";
 
     for (size_t i=0; i < std::min( 8UL, t.bufsize); i++){
-        os << hexch(t[i]);
+        os << hexch(t[i]) << ' ';
     }
-    os << "= \"" ;
+    os << " (" ;
     for (size_t i=0; i < std::min( 8UL, t.bufsize); i++){
-        os << t[i];
+        if (isprint(t[i])) {
+            os << t[i];
+        }
     }
-    os << " buf= " << t.buf
-       << " malloced= " << t.malloced
-       << "\" bufsize=" << t.bufsize
-       << " pagesize=" << t.pagesize
-       << " children=" << t.children
-       << " references=" << t.references
-       << " fd=" << t.fd << "]";
+    os << " )" ;
+    os << " buf= "          << static_cast<const void *>(t.buf)
+       << " malloced= "     << static_cast<const void *>(t.malloced)
+       << " buf_writable= " << static_cast<const void *>(t.buf_writable)
+       << " bufsize="       << t.bufsize
+       << " pagesize="      << t.pagesize
+       << " children="      << t.children
+       << " references="    << t.references
+       << " fd="            << t.fd
+       << "]";
     return os;
 }
 

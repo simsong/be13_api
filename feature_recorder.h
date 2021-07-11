@@ -179,13 +179,15 @@ public:
     std::atomic<int64_t> features_written{0};
 
     /* Special tokens written into the file */
-    static const std::string MAX_DEPTH_REACHED_ERROR_FEATURE;
-    static const std::string MAX_DEPTH_REACHED_ERROR_CONTEXT;
+    //static const std::string MAX_DEPTH_REACHED_ERROR_FEATURE;
+    //static const std::string MAX_DEPTH_REACHED_ERROR_CONTEXT;
+    inline static const std::string MAX_DEPTH_REACHED_ERROR_FEATURE{"process_extract: MAX DEPTH REACHED"};
+    inline static const std::string MAX_DEPTH_REACHED_ERROR_CONTEXT{""};
 
     /* quoting functions */
-    static std::string quote_string(const std::string& feature);   // turns unprintable characters to octal escape
-    static std::string unquote_string(const std::string& feature); // turns octal escape back to binary characters
-    static std::string extract_feature(const std::string& line);   // remove the feature from a feature file line
+    //static std::string quote_string(const std::string& feature);   // turns unprintable characters to octal escape
+    //static std::string unquote_string(const std::string& feature); // turns octal escape back to binary characters
+    //static std::string extract_feature(const std::string& line);   // remove the feature from a feature file line
 
     /* Hash an SBuf using the current hasher. If we want to hash less than a sbuf, make a child sbuf */
     const std::string hash(const sbuf_t& sbuf) const;
@@ -246,8 +248,10 @@ public:
     atomic_set<std::string>
         carve_cache{};                   // hashes of files that have been cached, so the same file is not carved twice
     std::string do_not_carve_encoding{}; // do not carve files with this encoding.
-    static const std::string CARVE_MODE_DESCRIPTION;
-    static const std::string NO_CARVED_FILE;
+    //static const std::string CARVE_MODE_DESCRIPTION;
+    //static const std::string NO_CARVED_FILE;
+    inline static const std::string CARVE_MODE_DESCRIPTION{"0=carve none; 1=carve encoded; 2=carve all"};
+    inline static const std::string NO_CARVED_FILE{""};
 
     // Carve data or a record to a file; returns filename of carved file or empty string if nothing carved
     // carve_data - sends to its own file.

@@ -624,25 +624,39 @@ TEST_CASE("malloc_sbuf", "[sbuf]") {
 
     {
         sbuf_t sb1b = sb1->slice(100);
-        REQUIRE(sb1->children==1);
+        REQUIRE(sb1->children==1);      // make sure child is registered
         REQUIRE(sb1b.children==0);
         REQUIRE(sb1b[0]==155);
         REQUIRE(sb1b[1]==154);
-        REQUIRE_THROWS_AS( sb1b.wbuf(0,0), std::runtime_error);
+        REQUIRE_THROWS_AS( sb1b.wbuf(0,0), std::runtime_error); // slices are not writable
     }
-    REQUIRE(sb1->children==0);
+    REQUIRE(sb1->children==0);          // make sure child is gone.
 
     sbuf_t *sb1c = sb1->new_slice_copy(100,5);
     REQUIRE(sb1c->bufsize==5);
     REQUIRE(sb1->children==0);
     delete sb1c;
+
+    // Set 100..200 t be 55
+    for(int i=100; i< 200; i++) {
+        sb1->wbuf(i, 55);
+    }
+    REQUIRE( sb1->is_constant(0, 100, 55) == false );
+    REQUIRE( sb1->is_constant(100, 100, 55) == true );
+    REQUIRE( sb1->find(150, 0) == -1 );
+    std::stringstream ss2;
+    ss2 << *sb1;
+    REQUIRE( ss2.str().find("children=0") != std::string::npos );
     delete sb1;
+
 
     std::string abc {"abcdefghijklmnopqrstuvwxyz"};
     sbuf_t *sb2 = sbuf_t::sbuf_malloc(pos0_t(), abc);
     REQUIRE((*sb2)[0]=='a');
     REQUIRE((*sb2)[9]=='j');
     REQUIRE((*sb2)[25]=='z');
+
+    REQUIRE( sb2->substr(2,4) == "cdef" );
 
     sb2 = sb2->realloc(10);
     REQUIRE(sb2->bufsize==10);
@@ -817,9 +831,6 @@ TEST_CASE("run", "[scanner]") {
     /* Make sure that the feature recorder output was created */
     std::vector<std::string> lines;
     std::string fname_fr = get_tempdir() + "/sha1_bufs.txt";
-    std::string cmd = "ls -l " + get_tempdir();
-    int ret = system(cmd.c_str());
-    if (ret != 0) { throw std::runtime_error("could not list tempdir???"); }
 
     lines = getLines(fname_fr);
     REQUIRE(lines[0] == "# BANNER FILE NOT PROVIDED (-b option)");
@@ -895,13 +906,6 @@ TEST_CASE("unicode_detection", "[unicode]") {
     delete sb8p;
 }
 
-TEST_CASE("Show the output directory", "[end]") {
-    std::string cmd = "ls -l " + get_tempdir();
-    std::cout << cmd << "\n";
-    int ret = system(cmd.c_str());
-    if (ret != 0) { throw std::runtime_error("could not list tempdir???"); }
-}
-
 TEST_CASE("directory_support", "[utilities]") {
     namespace fs = std::filesystem;
     std::string tmpdir = NamedTemporaryDirectory();
@@ -915,4 +919,11 @@ TEST_CASE("directory_support", "[utilities]") {
     REQUIRE(directory_empty(tmpdir) == false);
     unlink(foo_txt.c_str());
     rmdir(tmpdir.c_str());
+}
+
+TEST_CASE("Show the output directory", "[end]") {
+    std::string cmd = "ls -l " + get_tempdir();
+    std::cout << cmd << "\n";
+    int ret = system(cmd.c_str());
+    if (ret != 0) { throw std::runtime_error("could not list tempdir???"); }
 }

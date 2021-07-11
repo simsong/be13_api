@@ -4,19 +4,19 @@
 # Simson L. Garfinkel
 #
 # This is originally from PhotoRec, but modified substantially by Simson
-# Figure out which flags we can use with the compiler. 
+# Figure out which flags we can use with the compiler.
 #
 # These I don't like:
 # -Wdeclaration-after-statement -Wconversion
-# doesn't work: -Wunreachable-code 
-# causes configure to crash on gcc-4.2.1: -Wsign-compare-Winline 
-# causes warnings with unistd.h:  -Wnested-externs 
-# Just causes too much annoyance: -Wmissing-format-attribute 
+# doesn't work: -Wunreachable-code
+# causes configure to crash on gcc-4.2.1: -Wsign-compare-Winline
+# causes warnings with unistd.h:  -Wnested-externs
+# Just causes too much annoyance: -Wmissing-format-attribute
 
 # First, see if we are using CLANG
 using_clang=no
-if (g++ --version 2>&1 | grep clang > /dev/null) ; 
-then 
+if (g++ --version 2>&1 | grep clang > /dev/null) ;
+then
    AC_MSG_NOTICE([g++ is really clang++])
    using_clang=yes
 fi
@@ -70,11 +70,12 @@ unset option
 # -Waggregate-return -- aggregate returns are GOOD; they simplify code design
 # We can use these warnings after ZLIB gets upgraded:
 # -Wundef  --- causes problems with zlib
-# -Wcast-qual 
+# -Wcast-qual
 # -Wmissing-format-attribute  --- Just too annoying
+# Removed -D_FORTIFY_SOURCE=2 because we get it with address sanitizer
 AC_LANG_PUSH(C++)
 AC_CHECK_HEADERS([string])
-CXX_WARNINGS_TO_TEST="-Wall -MD -D_FORTIFY_SOURCE=2 -Wpointer-arith \
+CXX_WARNINGS_TO_TEST="-Wall -MD -Wpointer-arith \
     -Wshadow -Wwrite-strings -Wcast-align  \
     -Wredundant-decls -Wdisabled-optimization \
     -Wfloat-equal -Wmultichar -Wmissing-noreturn \
@@ -101,6 +102,4 @@ do
   unset SAVE_CXXFLAGS
 done
 unset option
-AC_LANG_POP()    
-
-
+AC_LANG_POP()

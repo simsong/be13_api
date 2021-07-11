@@ -42,20 +42,35 @@ jobs:
           wget https://ftpmirror.gnu.org/automake/automake-1.16.3.tar.gz
           tar xfz automake-1.16.3.tar.gz && cd automake-1.16.3 && ./configure && make && sudo make install
 
-      - name: c/c++ test
+      - name: run bootstrap
         run: |
-          bash bootstrap.sh && ./configure && make
+          bash bootstrap.sh
+
+      - name: configure for ubuntu
+        if: startsWith(matrix.os, 'ubuntu')
+        # it seems that -fsanitize=address and -fsanitize=memory fail under Catch2 with Ubuntu
+        run: |
+          ./configure CXXFLAGS='-g -O0 -fprofile-arcs -ftest-coverage ' LIBS='-lgcov'
+
+      - name: configure for macOS
+        if: startsWith(matrix.os, 'macos')
+        # it seems that -fsanitize=address and -fsanitize=memory breaks C++17 under GitHub Actions/MacOS
+        run: |
+          ./configure
+
+      - name: make check
+        run: |
+          make test_be13_api
+          ./test_be13_api
           make check  || (for fn in test*.log ; do echo ""; echo $fn ; cat $fn ; done; exit 1)
 
       - uses: ammaraskar/gcc-problem-matcher@0.1
         name: GCC Problem Matcher
 
-      - name: codecov report
+      - name: upload codecov report
         if: startsWith(matrix.os, 'ubuntu')
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         run: |
-          ./configure CFLAGS='-g -O0 -fprofile-arcs -ftest-coverage' CXXFLAGS='-g -O0 -fprofile-arcs -ftest-coverage' LIBS='-lgcov'
-          make check
-          gcov-9 -n -o . `find . -name '*cpp'`
+          gcov-9 -o . `find . -name '*cpp'`
           bash <(curl -s https://codecov.io/bash)

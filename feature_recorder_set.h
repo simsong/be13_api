@@ -87,8 +87,8 @@ public:
     feature_recorder_set(const flags_t& flags_, const scanner_config& sc);
     virtual ~feature_recorder_set();
 
-    /* Configuration */
-    const scanner_config& sc;
+    /* Configuration. This is a copy; it should be a reference, but that caused an AddressSanitizer error. */
+    const scanner_config sc;
 
     /* Read-only functions for the scanner-config file management variables */
     virtual std::filesystem::path get_input_fname() const { return sc.input_fname; }

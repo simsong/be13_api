@@ -52,7 +52,7 @@ typedef std::vector<packet_plugin_info> packet_plugin_info_vector_t;
  * create the scanner set
  */
 scanner_set::scanner_set(const scanner_config& sc_, const feature_recorder_set::flags_t& f, class dfxml_writer* writer_)
-    : sc(sc_), fs(f, sc_), writer(writer_) {
+    : sc(sc_), fs(f, sc), writer(writer_) {
     if (getenv("SCANNER_SET_DEBUG_PRINT_STEPS")) debug_flags.debug_print_steps = true;
     if (getenv("SCANNER_SET_DEBUG_NO_SCANNERS")) debug_flags.debug_no_scanners = true;
     if (getenv("SCANNER_SET_DEBUG_SCANNER")) debug_flags.debug_scanner = true;
